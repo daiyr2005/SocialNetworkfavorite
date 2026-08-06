@@ -9,7 +9,6 @@ from mysite.config import settings
 async def get_object(url: str):
 
     try:
-
         async with httpx.AsyncClient(timeout=5) as client:
             response = await client.get(url)
 
@@ -17,7 +16,7 @@ async def get_object(url: str):
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Store service unavailable"
+            detail="Post service unavailable"
         )
 
 
@@ -25,7 +24,7 @@ async def get_object(url: str):
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Store or product not found"
+            detail="Post not found"
         )
 
 
@@ -33,39 +32,27 @@ async def get_object(url: str):
 
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Store service returned status {response.status_code}"
+            detail=f"Post service returned {response.status_code}"
         )
 
 
     try:
-
         return response.json()
 
     except ValueError:
 
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Incorrect data"
+            status_code=500,
+            detail="Incorrect post data"
         )
 
 
 
+async def get_post(post_id: int):
 
-async def get_store(store_id: int):
-
-    url = f"{settings.store_service_url}/stores/{store_id}/"
-
-    return await get_object(
-        url=url
+    url = (
+        f"{settings.post_service_url}"
+        f"/posts/{post_id}/"
     )
 
-
-
-
-async def get_product(product_id: int):
-
-    url = f"{settings.store_service_url}/products/{product_id}/"
-
-    return await get_object(
-        url=url
-    )
+    return await get_object(url)

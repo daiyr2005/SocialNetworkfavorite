@@ -1,35 +1,41 @@
-from pymongo import AsyncMongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+
 from mysite.config import settings
-mongo_client: AsyncMongoClient | None = None
-mongo_database = None
+
+
+client = None
+database = None
+
 
 async def connect_mongodb():
-    global mongo_client, mongo_database
 
-    mongo_client = AsyncMongoClient(
-        settings.mongodb_url,
-        serverSelectionTimeoutMS=5000,
-        tz_aware=True
+    global client, database
+
+    client = AsyncIOMotorClient(
+        settings.mongodb_url
     )
-    await mongo_client.admin.command("ping")
 
-    mongo_database = mongo_client[
+    database = client[
         settings.mongodb_db_name
     ]
 
+    await client.admin.command("ping")
+
+    print("MongoDB connected")
+
+
+
 async def close_mongodb():
-    global mongo_client, mongo_database
-    if mongo_client is not None:
-        await mongo_client.close()
 
-    mongo_database = None
-    mongo_client = None
+    global client
 
-async def get_database():
-    if mongo_database is None:
-        raise RuntimeError("Not connection")
-    return mongo_database
+    if client:
+        client.close()
 
-async def get_order_connection():
-    database = await get_database()
-    return database["orders"]
+        print("MongoDB closed")
+
+
+
+async def get_favorite_connection():
+
+    return database["favorites"]
