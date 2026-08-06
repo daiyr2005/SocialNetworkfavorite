@@ -1,16 +1,27 @@
-# This is a sample Python script.
+from fastapi import FastAPI
+import uvicorn
+from mysite.database.mongodb import close_mongodb, connect_mongodb
+from contextlib import asynccontextmanager
+from mysite.api import bookings
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        await connect_mongodb()
+        print("Mongodb: successful")
+        yield
+    finally:
+        await close_mongodb()
+        print("Mongodb: connect close")
+
+booking_app = FastAPI(title="Booking Service", lifespan=lifespan)
+
+booking_app.include_router(bookings.booking_router)
+@booking_app.get("/")
+async def test_info():
+    return {"message": "all worked"}
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    uvicorn.run("main:booking_app", host="127.0.0.1", port=8002, reload=True)
