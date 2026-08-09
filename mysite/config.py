@@ -19,10 +19,6 @@ class Settings(BaseSettings):
 
     post_service_url: str = "http://127.0.0.1:8002"
 
-    favorite_service_url: str = "http://127.0.0.1:8003"
-
-    story_service_url: str = "http://127.0.0.1:8004"
-
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

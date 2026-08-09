@@ -1,41 +1,52 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-
+from pymongo import AsyncMongoClient
 from mysite.config import settings
 
-
-client = None
-database = None
+mongo_client: AsyncMongoClient | None = None
+mongo_database = None
 
 
 async def connect_mongodb():
+    global mongo_client, mongo_database
 
-    global client, database
-
-    client = AsyncIOMotorClient(
-        settings.mongodb_url
+    mongo_client = AsyncMongoClient(
+        settings.mongodb_url,
+        serverSelectionTimeoutMS=5000,
+        tz_aware=True
     )
 
-    database = client[
+    await mongo_client.admin.command("ping")
+
+    mongo_database = mongo_client[
         settings.mongodb_db_name
     ]
-
-    await client.admin.command("ping")
 
     print("MongoDB connected")
 
 
-
 async def close_mongodb():
+    global mongo_client, mongo_database
 
-    global client
+    if mongo_client is not None:
+        mongo_client.close()
 
-    if client:
-        client.close()
+    mongo_client = None
+    mongo_database = None
 
-        print("MongoDB closed")
+    print("MongoDB closed")
 
 
+def get_database():
+    if mongo_database is None:
+        raise RuntimeError("Подключение к MongoDB отсутствует")
 
-async def get_favorite_connection():
+    return mongo_database
 
+
+def get_favorite_connection():
+    database = get_database()
     return database["favorites"]
+
+
+def get_favorite_item_connection():
+    database = get_database()
+    return database["favorites_item"]
