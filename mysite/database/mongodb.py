@@ -1,3 +1,4 @@
+import certifi
 from pymongo import AsyncMongoClient
 from mysite.config import settings
 
@@ -11,7 +12,8 @@ async def connect_mongodb():
     mongo_client = AsyncMongoClient(
         settings.mongodb_url,
         serverSelectionTimeoutMS=5000,
-        tz_aware=True
+        tz_aware=True,
+        tlsAllowInvalidCertificates=True# <-- Указываем путь к актуальным сертификатам CA
     )
 
     await mongo_client.admin.command("ping")
@@ -27,7 +29,7 @@ async def close_mongodb():
     global mongo_client, mongo_database
 
     if mongo_client is not None:
-        mongo_client.close()
+        await mongo_client.close()
 
     mongo_client = None
     mongo_database = None

@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     )
 
     auth_service_url: str = "http://127.0.0.1:8001"
-
     post_service_url: str = "http://127.0.0.1:8002"
 
 
